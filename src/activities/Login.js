@@ -22,80 +22,21 @@ class Login extends Component {
         this.state = {
             login: '',
             password: '',
-            isLoading: 3,
+            isLoading: false,
             tests: null,
             contenu_tests: null,
             points_cle: null,
         };
     }
 
-    tryLogin() {
-        fetch('https://app.sigeco.fr', {
-            method: 'POST',
-            headers: new Headers({
-                'Content-Type': 'application/x-www-form-urlencoded',
-            }),
-            body:
-            "forms[id_client_identification]=" + this.state.login + "&" +
-            "forms[pass_identification]=" + this.state.password + "&" +
-            "robot=1972&" +
-            "tab_mobile=1",
-        })
-            .then((response) => response.text())
-            .then((responseText) => {
-                //If  android, there is an invisible character in the beginning
-                if (Platform.OS === 'android') {
-                    if (responseText.charAt(0) == '{') {
-                        //message = error
-                        this.refs.toast.show('Identifiant ou mot de passe incorrect', DURATION.LENGTH_LONG);
-                        this.setState({
-                            password: '',
-                        })
-                    }
-                    else {
-                        message = JSON.parse(responseText.substring(1)).message;
-                        if (message == 'fail') {
-                            this.refs.toast.show('Pas de tests à charger', DURATION.LENGTH_LONG);
-                        } else {
-                            this.loadDatas();
-                            this.goToTests();
-                        }
-
-                    }
-                }
-                //if iOS no invisible charater
-                else {
-                    message = JSON.parse(responseText).message;
-                    if (message == 'fail') {
-                        this.refs.toast.show('Pas de tests à charger', DURATION.LENGTH_LONG);
-                    } else if (message == 'error'){
-                        this.refs.toast.show('Identifiant ou mot de passe incorrect', DURATION.LENGTH_LONG);
-                        this.setState({
-                            password: '',
-                        })
-                    }
-                    else {
-                        this.loadDatas();
-                        this.goToTests();
-                    }
-
-                }
-            })
-            .catch((error) => {
-                console.error(error);
-            })
-    }
-
     loadDatas() {
-
-        //100ms between each fetch to not receive error
-        setTimeout(function() {this.getTests()}.bind(this),100);
-        setTimeout(function() {this.getContenuTests()}.bind(this),100);
-        setTimeout(function() {this.getPointCles()}.bind(this),100);
-
         this.setState({
-            isLoading: 0
+            isLoading: true
         });
+
+        //getTests(try to log) -> getContenuTest -> getPointCles
+        this.getTests();
+
     }
 
     //get tests (tab_mobile = 1)
@@ -113,32 +54,51 @@ class Login extends Component {
         })
             .then((response) => response.text())
             .then((responseText) => {
-                //If  android, there is an invisible character in the beginning
+                //If  android, there is an invisible character in the beginning, but not if message=error
                 if (Platform.OS === 'android') {
-                    if (responseText.charAt(0) == '{') {
+                    if (responseText.charAt(0) === '{') {
                         //{message : error}
-                        this.getTests();
+                        this.refs.toast.show('Identifiant ou mot de passe incorrect', DURATION.LENGTH_LONG);
+                        this.setState({
+                            password: '',
+                            isLoading: false,
+                        })
                     }
                     else {
                         responseText = responseText.substring(1);
-                        json = JSON.parse(responseText);
-                        this.setState({
-                            isLoading: this.state.isLoading + 1,
-                            tests: json.tests
-                        })
+                        let json = JSON.parse(responseText);
+                        if (json.message === 'fail') {
+                            this.refs.toast.show('Pas de test à charger', DURATION.LENGTH_LONG);
+                            this.setState({
+                                isLoading: false,
+                            });
+                        } else {
+                            this.setState({
+                                tests: json.tests
+                            });
+                            this.getContenuTests();
+                        }
                     }
                 }
                 //if iOS no invisible character
                 else {
-                    message = JSON.parse(responseText).message;
-                    if (message == 'error') {
-                        this.getTests();
-                    } else {
-                        json = JSON.parse(responseText);
+                    let json = JSON.parse(responseText);
+                    if (json.message === 'fail') {
+                        this.refs.toast.show('Pas de test à charger', DURATION.LENGTH_LONG);
                         this.setState({
-                            isLoading: this.state.isLoading + 1,
-                            tests: json.tests
+                            isLoading: false,
+                        });
+                    } else if (json.message === 'error'){
+                        this.refs.toast.show('Identifiant ou mot de passe incorrect', DURATION.LENGTH_LONG);
+                        this.setState({
+                            password: '',
+                            isLoading: false,
                         })
+                    }else {
+                        this.setState({
+                            tests: json.tests
+                        });
+                        this.getContenuTests();
                     }
                 }
 
@@ -163,32 +123,38 @@ class Login extends Component {
         })
             .then((response) => response.text())
             .then((responseText) => {
-                //If  android, there is an invisible character in the beginning
+                //If  android, there is an invisible character in the beginning, but not if message=error
                 if (Platform.OS === 'android') {
-                    if (responseText.charAt(0) == '{') {
+                    if (responseText.charAt(0) === '{') {
                         //{message : error}
-                        this.getContenuTests();
+                        this.refs.toast.show('Données non chargées, veuillez recommencer', DURATION.LENGTH_LONG);
+                        this.setState({
+                            isLoading: false,
+                        });
                     }
                     else {
                         responseText = responseText.substring(1);
-                        json = JSON.parse(responseText);
+                        let json = JSON.parse(responseText);
                         this.setState({
-                            isLoading: this.state.isLoading + 1,
                             contenu_tests: json.contenu_tests,
-                        })
+                        });
+                        this.getPointCles();
                     }
                 }
                 //if iOS no invisible character
                 else {
-                    message = JSON.parse(responseText).message;
-                    if (message == 'error') {
-                        this.getContenuTests();
-                    } else {
-                        json = JSON.parse(responseText);
+                    let json = JSON.parse(responseText);
+                    if (json.message === 'error') {
+                        this.refs.toast.show('Données non chargées, veuillez recommencer', DURATION.LENGTH_LONG);
                         this.setState({
-                            isLoading: this.state.isLoading + 1,
+                            isLoading: false,
+                        });
+
+                    } else {
+                        this.setState({
                             contenu_tests: json.contenu_tests,
-                        })
+                        });
+                        this.getPointCles();
                     }
                 }
             })
@@ -213,33 +179,39 @@ class Login extends Component {
             .then((response) => response.text())
             .then((responseText) => {
 
-                //If  android, there is an invisible character in the beginning
+                //If  android, there is an invisible character in the beginning, but not if message=error
                 if (Platform.OS === 'android') {
-                    if (responseText.charAt(0) == '{') {
+                    if (responseText.charAt(0) === '{') {
                         //{message : error}
-                        this.getPointCles();
+                        this.refs.toast.show('Données non chargées, veuillez recommencer', DURATION.LENGTH_LONG);
+                        this.setState({
+                            isLoading: false,
+                        });
                     }
                     else {
                         responseText = responseText.substring(1);
-                        json = JSON.parse(responseText);
+                        let json = JSON.parse(responseText);
                         this.setState({
-                            isLoading: this.state.isLoading + 1,
+                            isLoading: false,
                             points_cle: json.points_cle,
-                        })
+                        });
+                        this.goToTestsList();
                     }
                 }
                 //if iOS no invisible character
                 else {
-                    message = JSON.parse(responseText).message;
-                    if (message == 'error') {
-                        this.getPointCles();
-                    } else {
-                        json = JSON.parse(responseText);
-
+                    let json = JSON.parse(responseText);
+                    if (json.message === 'error') {
+                        this.refs.toast.show('Données non chargées, veuillez recommencer', DURATION.LENGTH_LONG);
                         this.setState({
-                            isLoading: this.state.isLoading + 1,
+                            isLoading: false,
+                        });
+                    } else {
+                        this.setState({
+                            isLoading: false,
                             points_cle: json.points_cle
-                        })
+                        });
+                        this.goToTestsList();
                     }
                 }
             })
@@ -248,23 +220,17 @@ class Login extends Component {
             })
     }
 
-    goToTests() {
-        if (this.state.isLoading < 3) {
-            window.setTimeout(() => this.goToTests(), 10);
-        } else {
-            this.props.navigation.navigate('TestsList', {
-                    tests: this.state.tests,
-                    contenu_tests: this.state.contenu_tests,
-                    points_cle: this.state.points_cle,
-                    login: this.state.login,
-                    password: this.state.password,
-                }
-            );
-        }
+    goToTestsList() {
+        this.props.navigation.navigate('TestsList', {
+            tests: this.state.tests,
+            contenu_tests: this.state.contenu_tests,
+            points_cle: this.state.points_cle,
+            login: this.state.login,
+            password: this.state.password,
+        });
     }
 
     render() {
-
         return (
             <View style={styles.container} >
                 <ScrollView keyboardShouldPersistTaps='handled'>
@@ -291,10 +257,10 @@ class Login extends Component {
                         onChangeText={(password) => this.setState({password})}>
                         {this.state.password}
                     </TextInput>
-                    <TouchableOpacity style={styles.loginButtonContainer} onPress={this.tryLogin.bind(this)}>
+                    <TouchableOpacity style={styles.loginButtonContainer} onPress={this.loadDatas.bind(this)}>
                         <Text style={styles.loginButtonText}>Se connecter</Text>
                     </TouchableOpacity>
-                    {this.state.isLoading < 3 ?
+                    {this.state.isLoading ?
                         <View style={styles.isLoadingContainer}>
                             <Text style={styles.isLoadingText}> Chargement en cours</Text>
                             <ActivityIndicator color={'white'}/>
@@ -353,6 +319,6 @@ const styles = {
         color: 'white',
         marginBottom: 10,
     },
-}
+};
 
 export default Login;

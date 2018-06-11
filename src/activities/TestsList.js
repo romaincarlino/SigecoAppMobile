@@ -30,20 +30,14 @@ class TestsList extends Component {
             points_cle: this.params.points_cle,
             login: this.params.login,
             password: this.params.password,
-        })
+        });
 
         //block hardware back button
         BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
     }
 
-    componentWillUnmount() {
-        //block hardware back button
-        BackHandler.removeEventListener('hardwareBackPress', this.handleBackButton);
-    }
-
     //refresh the flatlist after a validation
     componentDidUpdate(prevProps) {
-
         if (this.props.navigation !== prevProps.navigation) {
             this.setState({
                 tests: this.params.tests,
@@ -61,9 +55,9 @@ class TestsList extends Component {
     }
 
     renderItem(item, index) {
-        for (var i = 0; i < this.state.contenu_tests.length; i++) {
-            var ct = this.state.contenu_tests[i];
-            if (ct.id_test == item.id_test) {
+        for (let i = 0; i < this.state.contenu_tests.length; i++) {
+            let ct = this.state.contenu_tests[i];
+            if (ct.id_test === item.id_test) {
                 return (
                     <TouchableOpacity onPress={() => this.onItemClick(item, index)}>
                         <ListItem_TestsList
@@ -73,13 +67,12 @@ class TestsList extends Component {
                         />
                     </TouchableOpacity>
                 );
-
             }
         }
     }
 
     onItemClick(item, positionInTests) {
-        if (item.fait == '1') {
+        if (item.fait === '1') {
             Alert.alert(
                 'Ce test a été validé',
                 'Voulez-vous invalider et modifier ce test?',
@@ -96,7 +89,7 @@ class TestsList extends Component {
                                     {text: 'Non'},
                                     {
                                         text: 'Oui', onPress: () => {
-                                            //changer le "fait" et le commentaire
+                                            //change  "fait" and the commentary
                                             tests = this.state.tests;
                                             tests[positionInTests].fait = '0';
                                             tests[positionInTests].commentaire = '';
@@ -104,10 +97,10 @@ class TestsList extends Component {
                                                 tests: tests
                                             });
 
-                                            //on remet les points cle a zero
+                                            //initiate again points cle
                                             for (i = 0; i < this.state.points_cle.length; i++) {
                                                 point_cle = this.state.points_cle[i];
-                                                if (point_cle.id_test == item.id_test) {
+                                                if (point_cle.id_test === item.id_test) {
                                                     point_cle.value = null;
                                                 }
                                             }
@@ -134,12 +127,9 @@ class TestsList extends Component {
         } else {
             this.goToTestPage(item, positionInTests);
         }
-
     }
 
     goToTestPage(item, positionInTests) {
-        //go to TestPage
-
         this.props.navigation.navigate('TestPage', {
             positionInTests: positionInTests,
             item: item,
@@ -155,22 +145,22 @@ class TestsList extends Component {
         tab5 = [];
         tab4 = [];
 
-        //on cree les donnees a envoyer
-        for (var i = 0; i < context.state.tests.length; i++) {
-            test = context.state.tests[i];
-            if (test.fait == '1') {
+        //create datas to send
+        for (let i = 0; i < context.state.tests.length; i++) {
+            let test = context.state.tests[i];
+            if (test.fait === '1') {
                 //complete tab 5
                 tab5.push({
                     id: test.id,
                     token: test.token,
                     commentaire: test.commentaire,
                     fait: test.fait
-                })
+                });
 
-                // complete tab 4
-                for (var j = 0; j < context.state.points_cle.length; j++) {
-                    point_cle = context.state.points_cle[j];
-                    if (point_cle.id_test == test.id_test) {
+                //complete tab 4
+                for (let j = 0; j < context.state.points_cle.length; j++) {
+                    let point_cle = context.state.points_cle[j];
+                    if (point_cle.id_test === test.id_test) {
 
                         tab4.push({
                             id: test.id,
@@ -183,11 +173,11 @@ class TestsList extends Component {
             }
         }
 
-        //mise en forme des donnees
+        //put datas in the good format
         retour4 = '{\"retour\":' + JSON.stringify(tab4) + '}';
         retour5 = '{\"retour\":' + JSON.stringify(tab5) + '}';
 
-        //envoi des donness
+        //send datas
 
         //tab5
         fetch('https://app.sigeco.fr?', {
@@ -206,13 +196,13 @@ class TestsList extends Component {
             .then((responseText) => {
                 //If  android, there is an invisible character in the beginning
                 if (Platform.OS === 'android') {
-                    //if {message : error} ou fail
-                    if (responseText.charAt(0) == '{') {
+                    //if {message : error} or {message : fail}
+                    if (responseText.charAt(0) === '{') {
                         context.refs.toast.show('Echec de la synchronisation', DURATION.LENGTH_LONG);
                     }
                     else {
-                        message = JSON.parse(responseText.substring(1)).message;
-                        if (message == 'ok') {
+                        let message = JSON.parse(responseText.substring(1)).message;
+                        if (message === 'ok') {
                             //tab 4
                             fetch('https://app.sigeco.fr?', {
                                 method: 'POST',
@@ -228,20 +218,20 @@ class TestsList extends Component {
                             })
                                 .then((response) => response.text())
                                 .then((responseText) => {
-                                    //if {message : error} ou fail
-                                    if (responseText.charAt(0) == '{') {
+                                    //if {message : error} or {message : fail}
+                                    if (responseText.charAt(0) === '{') {
                                         context.refs.toast.show('Echec de la synchronisation', DURATION.LENGTH_LONG);
                                     }
                                     else {
                                         message = JSON.parse(responseText.substring(1)).message;
-                                        if (message == 'ok') {
+                                        if (message === 'ok') {
                                             context.refs.toast.show('Données synchronisées', DURATION.LENGTH_LONG);
 
-                                            //on supprime les test validés
-                                            tests = context.state.tests;
-                                            for (var i = 0; i < tests.length; i++) {
-                                                test = tests[i];
-                                                if (test.fait == '1') {
+                                            //delete validated tests in the list
+                                            let tests = context.state.tests;
+                                            for (let i = 0; i < tests.length; i++) {
+                                                let test = tests[i];
+                                                if (test.fait === '1') {
                                                     tests.splice(i, 1);
                                                     i = i - 1;
                                                 }
@@ -251,6 +241,7 @@ class TestsList extends Component {
                                             })
                                         }
                                         else {
+                                            //{message : fail}
                                             this.refs.toast.show('Echec de la synchronisation', DURATION.LENGTH_LONG);
                                         }
                                     }
@@ -260,17 +251,16 @@ class TestsList extends Component {
                                 })
                         }
                         else {
+                            //{message : fail}
                             context.refs.toast.show('Echec de la synchronisation', DURATION.LENGTH_LONG);
                         }
                     }
                 }
-                //if iOS no invisible charater
+                //if iOS no invisible character
                 else {
-                    message = JSON.parse(responseText).message;
-                    if (message == 'error') {
-                        context.refs.toast.show('Echec de la synchronisation1', DURATION.LENGTH_LONG);
-                    }
-                    else {
+                    let message = JSON.parse(responseText).message;
+
+                    if(message === 'ok'){
                             //tab 4
                             fetch('https://app.sigeco.fr?', {
                                 method: 'POST',
@@ -287,30 +277,35 @@ class TestsList extends Component {
                                 .then((response) => response.text())
                                 .then((responseText) => {
                                     message = JSON.parse(responseText).message;
-                                    if (message == 'error') {
-                                        context.refs.toast.show('Echec de la synchronisation2', DURATION.LENGTH_LONG);
-                                    }
-                                    else {
-                                            context.refs.toast.show('Données synchronisées', DURATION.LENGTH_LONG);
+                                    if (message === 'ok') {
+                                        context.refs.toast.show('Données synchronisées', DURATION.LENGTH_LONG);
 
-                                            //on supprime les test validés
-                                            tests = context.state.tests;
-                                            for (var i = 0; i < tests.length; i++) {
-                                                test = tests[i];
-                                                if (test.fait == '1') {
-                                                    tests.splice(i, 1);
-                                                    i = i - 1;
-                                                }
+                                        //delete validated tests of the list
+                                        let tests = context.state.tests;
+                                        for (let i = 0; i < tests.length; i++) {
+                                            let test = tests[i];
+                                            if (test.fait === '1') {
+                                                tests.splice(i, 1);
+                                                i = i - 1;
                                             }
-                                            context.setState({
-                                                tests: tests
-                                            })
+                                        }
+                                        context.setState({
+                                            tests: tests
+                                        })
+                                    }
+                                    else{
+                                        //if {message : error} or {message : fail}
+                                        context.refs.toast.show('Echec de la synchronisation', DURATION.LENGTH_LONG);
                                     }
                                 })
                                 .catch((error) => {
                                     console.error(error);
                                 })
                         }
+                        else {
+                        //if {message : error} or {message : fail}
+                        context.refs.toast.show('Echec de la synchronisation', DURATION.LENGTH_LONG);
+                    }
                 }
             })
             .catch((error) => {
@@ -321,7 +316,7 @@ class TestsList extends Component {
     back(context) {
         Alert.alert(
             'Déconnexion',
-            'Voulez vous vraiment vous déconnecter? Toute sauvegarde non synchronisée sera perdue ',
+            'Voulez-vous vraiment vous déconnecter? Toute sauvegarde non synchronisée sera perdue ',
             [
                 {text: 'Oui', onPress: () => context.props.navigation.navigate("Login")},
                 {text: 'Non'},
@@ -353,6 +348,7 @@ class TestsList extends Component {
     }
 }
 
+//flatlist will not touch the bottom of the window
 let { height } = Dimensions.get("window");
 
 const styles = {

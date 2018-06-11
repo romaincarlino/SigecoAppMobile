@@ -16,7 +16,7 @@ import Toast, {DURATION} from 'react-native-easy-toast'
 class TestPage extends Component {
 
     params = this.props.navigation.state.params;
-    positionsInPointsCle = [];
+    //positionsInPointsCle = [];
 
     static navigationOptions = {
         header: null,
@@ -30,6 +30,7 @@ class TestPage extends Component {
             contenu_tests: null,
             points_cle: null,
             points_cle_test: null,
+            positionsInPointsCle: null,
             login: null,
             password: null,
         }
@@ -38,21 +39,22 @@ class TestPage extends Component {
     componentDidMount() {
         //Separate points cle from the tests than the other
         points_cle_test = [];
+        positionsInPointsCle = [];
 
         for (var i = 0; i < this.params.points_cle.length; i++) {
             point_cle = this.params.points_cle[i];
-            if (point_cle.id_test == this.params.item.id_test) {
+            if (point_cle.id_test === this.params.item.id_test) {
                 //add to the list of point_cle we will see
                 points_cle_test.push(point_cle);
                 //get the position of the point_cle in the total list
                 point_cle['positionInPointsCle'] = i;
-                this.positionsInPointsCle.push(i);
+                positionsInPointsCle.push(i);
             }
         }
 
         //get commentaire
 
-        if (this.params.tests[this.params.positionInTests].commentaire == undefined) {
+        if (this.params.tests[this.params.positionInTests].commentaire === undefined) {
             this.params.tests[this.params.positionInTests]['commentaire'] = '';
         }
 
@@ -62,16 +64,13 @@ class TestPage extends Component {
             contenu_tests: this.params.contenu_tests,
             points_cle: this.params.points_cle,
             points_cle_test: points_cle_test,
+            positionsInPointsCle: positionsInPointsCle,
             login: this.params.login,
             password: this.params.password
-        })
+        });
+
         //block hardware back button
         BackHandler.addEventListener('hardwareBackPress', this.handleBackButton);
-    }
-
-    componentWillUnmount() {
-        //block hardware back button
-        BackHandler.removeEventListener('hardwareBackPress', this.handleBackButton);
     }
 
     //block hardware black button
@@ -90,13 +89,13 @@ class TestPage extends Component {
     }
 
     changeValueItem(value, positionInPointsCle, context) {
-        //on change la case "value" du tableau 3 (case rajoutée)
+        //change the data "value" of the tab3 (data added)
         context.state.points_cle[positionInPointsCle]['value'] = value;
     }
 
     backToTestsList(context) {
 
-        //charger les nouvelles donnees
+        //load new data
         context.state.tests[context.params.positionInTests].commentaire = context.state.commentaire;
 
         context.props.navigation.navigate("TestsList", {
@@ -111,22 +110,21 @@ class TestPage extends Component {
     validateTest(context) {
         validate = true;
 
-        for (var i = 0; i < context.positionsInPointsCle.length; i++) {
-            pos = context.positionsInPointsCle[i];
-            if (context.state.points_cle[pos].value == undefined ) {
+        for (var i = 0; i < context.state.positionsInPointsCle.length; i++) {
+            pos = context.state.positionsInPointsCle[i];
+            if (context.state.points_cle[pos].value === undefined ) {
                 validate = false;
             }
         }
 
         if (validate) {
-            //changer le "fait"
+            //change "fait"
             context.state.tests[context.params.positionInTests].fait = '1';
 
-            //changer de page et envoyer donnees modifiees
+            //change page and send mofified datas
             context.backToTestsList(context);
         } else {
             context.refs.toast.show('Tous les points clés ne sont pas remplis', DURATION.LENGTH_LONG);
-
         }
     }
 
@@ -205,8 +203,6 @@ const styles = {
         marginBottom: 100,
         textAlignVertical: 'top',
     }
-
-
 };
 
 export default TestPage;

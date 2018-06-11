@@ -8,9 +8,9 @@ class NavBar extends Component {
     render() {
         return (
             <View style={Platform.OS === 'android' ? styles.backgroundAndroid : styles.backgroundIOS}>
-                <TouchableOpacity style={styles.backarrowTouchable}
+                <TouchableOpacity style={styles.backArrowTouchable}
                     onPress={() => this.props.backFunction(this.props.context)}>
-                    <Image style={styles.backarrow} source={Images.back}/>
+                    <Image style={styles.backArrow} source={Images.back}/>
                 </TouchableOpacity>
                 <Text style={styles.title}>{this.props.title}</Text>
                 <TouchableOpacity style={styles.rightTouchable}
@@ -36,13 +36,13 @@ const styles = {
         alignItems:'center',
         height: 50,
     },
-    backarrowTouchable: {
+    backArrowTouchable: {
         width: 30,
         height: 30,
         position:'absolute',
         left:10,
     },
-    backarrow: {
+    backArrow: {
         width: 30,
         height: 30,
     },

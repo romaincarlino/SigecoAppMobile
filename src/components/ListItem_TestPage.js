@@ -18,12 +18,11 @@ class ListItem_TestPage extends Component {
     }
 
     componentDidMount() {
-        //facultatif?
-        data_source = [
+        let data_source = [
             {label: 'Oui', value: 1},
             {label: 'Non', value: 0},
         ];
-        if (this.props.item.facultatif == '1') {
+        if (this.props.item.facultatif === '1') {
             data_source.push({label: 'Non \nconcerné', value: -1});
         }
         this.setState({
@@ -41,7 +40,7 @@ class ListItem_TestPage extends Component {
 
 
     render() {
-        resultat_attendu = this.props.item.resultat_attendu.replace(/<br>/g, "\n");
+        let resultat_attendu = this.props.item.resultat_attendu.replace(/<br>/g, "\n");
 
         return (
             <View style={styles.item}>
@@ -51,7 +50,7 @@ class ListItem_TestPage extends Component {
                     <RadioForm
                         dataSource={this.state.data_source}
                         circleSize={20}
-                        initial={this.props.item.value != undefined ? this.props.item.value : null}
+                        initial={this.props.item.value !== undefined ? this.props.item.value : null}
                         outerColor={Colors.black}
                         innerColor={Colors.black}
                         onPress={(data) => {

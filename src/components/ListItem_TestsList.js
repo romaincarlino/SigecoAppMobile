@@ -6,9 +6,9 @@ class ListItem_TestsList extends Component {
 
     render() {
 
-        contexte = this.props.contenu_test.contexte.replace(/<br>/g, "\n");
-        fourniture = this.props.contenu_test.fourniture.replace(/<br>/g, "\n");
-        demande = this.props.contenu_test.demande.replace(/<br>/g, "\n");
+        let contexte = this.props.contenu_test.contexte.replace(/<br>/g, "\n");
+        let fourniture = this.props.contenu_test.fourniture.replace(/<br>/g, "\n");
+        let demande = this.props.contenu_test.demande.replace(/<br>/g, "\n");
 
         return (
             <View style={this.props.item.fait === '1' ? styles.itemGreen : styles.itemNormal}>
@@ -80,8 +80,6 @@ const styles = {
     title: {
         fontWeight: 'bold',
         color: Colors.black,
-        //borderBottomColor: Colors.gray,
-        //borderBottomWidth: 1,
         padding: 5,
         margin: 3,
     },
